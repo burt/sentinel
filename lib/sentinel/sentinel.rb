@@ -21,6 +21,27 @@ module Sentinel
         end
       end
     end
+    
+    # Adds an authorisation scope to the associated model
+    def self.auth_scope(name, block)
+      model_class = self.name.demodulize.gsub("Sentinel", "").constantize
+      model_class.send :named_scope, name.to_sym, block
+    end
+    
+    # TODO: move this helper to class
+    # source: http://blog.jayfields.com/2008/02/ruby-dynamically-define-method.html
+    def self.def_each(*method_names, &block)
+      method_names.each do |method_name|
+        define_method method_name do
+          instance_exec method_name, &block
+        end
+      end
+    end
+    
+    # Adds rest methods, returning false in each case
+    def_each :index, :create, :read, :update, :destroy do |method_name|
+      false
+    end
 
     private
 

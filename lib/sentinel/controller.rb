@@ -34,6 +34,20 @@ module Sentinel
     end
 
     module ClassMethods
+      # Macro to add restful access control by convention
+      def restful_access_control
+        model_name = self.name.demodulize.gsub("Controller", "").singularize.downcase.to_sym
+        controls_access_with do
+          model = instance_variable_get "@#{model_name}"
+          "#{model_name.to_s.capitalize}Sentinel".constantize.new :current_user => current_user, model_name => model
+        end
+        self.grants_access_to :index, :only => [:index]
+        self.grants_access_to :create, :only => [:new, :create]
+        self.grants_access_to :read, :only => [:show]
+        self.grants_access_to :update, :only => [:edit, :update]
+        self.grants_access_to :destroy, :only => [:destroy]
+      end
+      
       def controls_access_with(&block)
         self.sentinel = block
       end
